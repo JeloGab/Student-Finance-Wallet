@@ -26,4 +26,4 @@ const requireRole = (role) => (req, res, next) => {
   next()
 }
 
-module.exports = { authenticate, requireRole }
+module.exports = { authenticate, requireRole, authClient }
