@@ -109,6 +109,10 @@ export default function PaymentManagement() {
     }
   }
 
+  const todayMeterPct = Math.min((todayTotal / 1_000_000) * 100, 100)
+  const pendingCount = recentPayments.filter(p => p.status !== 'CLEARED').length
+  const pendingMeterPct = recentPayments.length > 0 ? Math.round((pendingCount / recentPayments.length) * 100) : 0
+
   const formatAmount = (amount) =>
     new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(amount)
 
@@ -288,16 +292,16 @@ export default function PaymentManagement() {
               <div className="text-label-bold text-slate-500 uppercase tracking-tighter">Total Verified (Today)</div>
               <div className="text-h2 font-h2 text-slate-900 mt-1">{formatAmount(todayTotal)}</div>
               <div className="mt-3 w-full h-1 bg-slate-100 rounded-full overflow-hidden">
-                <div className="bg-emerald-500 h-full w-2/3" />
+                <div className="bg-emerald-500 h-full transition-all duration-500" style={{ width: `${todayMeterPct}%` }} />
               </div>
             </div>
             <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
               <div className="text-label-bold text-slate-500 uppercase tracking-tighter">Pending Approval</div>
               <div className="text-h2 font-h2 text-slate-900 mt-1">
-                {recentPayments.filter(p => p.status !== 'CLEARED').length} Entries
+                {pendingCount} Entries
               </div>
               <div className="mt-3 w-full h-1 bg-slate-100 rounded-full overflow-hidden">
-                <div className="bg-slate-300 h-full w-1/4" />
+                <div className="bg-slate-300 h-full transition-all duration-500" style={{ width: `${pendingMeterPct}%` }} />
               </div>
             </div>
           </div>

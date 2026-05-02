@@ -105,18 +105,22 @@ const getRecentPayments = async (req, res) => {
 
 const getTodayTotal = async (req, res) => {
   try {
-    const today = new Date().toISOString().split('T')[0]
+    const startOfDay = new Date()
+    startOfDay.setHours(0, 0, 0, 0)
+    const endOfDay = new Date()
+    endOfDay.setHours(23, 59, 59, 999)
 
     const { data, error } = await supabase
       .from('payment_transactions')
       .select('amount')
-      .eq('payment_date', today)
+      .gte('created_at', startOfDay.toISOString())
+      .lte('created_at', endOfDay.toISOString())
       .eq('status', 'CLEARED')
 
     if (error) throw error
 
     const total = data.reduce((sum, p) => sum + Number(p.amount), 0)
-    return res.json({ total, date: today })
+    return res.json({ total, date: startOfDay.toISOString().split('T')[0] })
   } catch (err) {
     console.error('getTodayTotal error:', err)
     return res.status(500).json({ error: 'Server error', message: 'Failed to fetch today total' })
