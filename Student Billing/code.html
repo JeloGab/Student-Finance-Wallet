@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Billing &amp; Invoicing | Student Finance Wallet</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-container": "#6f88ad",
+                        "on-secondary-container": "#556474",
+                        "tertiary-fixed-dim": "#66dd8b",
+                        "surface-variant": "#e3e2e5",
+                        "outline": "#74777f",
+                        "on-primary": "#ffffff",
+                        "on-primary-fixed-variant": "#2f486a",
+                        "inverse-surface": "#2f3033",
+                        "tertiary-fixed": "#83fba5",
+                        "surface-container": "#efedf0",
+                        "secondary-fixed": "#d4e4f6",
+                        "background": "#faf9fc",
+                        "secondary": "#50606f",
+                        "on-secondary-fixed": "#0d1d2a",
+                        "inverse-primary": "#afc8f0",
+                        "surface-bright": "#faf9fc",
+                        "outline-variant": "#c4c6cf",
+                        "on-tertiary-container": "#119b50",
+                        "on-secondary-fixed-variant": "#394857",
+                        "surface-container-high": "#e9e7eb",
+                        "tertiary": "#000802",
+                        "on-tertiary-fixed-variant": "#005227",
+                        "primary-fixed-dim": "#afc8f0",
+                        "tertiary-container": "#00250e",
+                        "surface": "#faf9fc",
+                        "on-error": "#ffffff",
+                        "primary-container": "#001f3f",
+                        "on-background": "#1a1c1e",
+                        "on-secondary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "secondary-container": "#d1e1f4",
+                        "on-tertiary-fixed": "#00210c",
+                        "primary": "#000613",
+                        "surface-dim": "#dbd9dd",
+                        "surface-container-low": "#f4f3f6",
+                        "error": "#ba1a1a",
+                        "surface-container-highest": "#e3e2e5",
+                        "on-error-container": "#93000a",
+                        "secondary-fixed-dim": "#b8c8da",
+                        "on-surface": "#1a1c1e",
+                        "on-primary-fixed": "#001c3a",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface-variant": "#43474e",
+                        "on-tertiary": "#ffffff",
+                        "inverse-on-surface": "#f2f0f3",
+                        "primary-fixed": "#d4e3ff",
+                        "surface-tint": "#476083"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Manrope"],
+                        "body-lg": ["Manrope"],
+                        "data-mono": ["Manrope"],
+                        "label-bold": ["Manrope"],
+                        "h3": ["Manrope"],
+                        "h1": ["Manrope"],
+                        "h2": ["Manrope"],
+                        "body-sm": ["Manrope"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.filled {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background font-body-md text-on-background min-h-screen">
+<!-- TopAppBar -->
+<header class="bg-slate-50/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200 shadow-sm w-full px-6 py-3 flex justify-between items-center">
+<div class="flex items-center gap-4">
+<span class="font-extrabold tracking-tight text-lg text-black">Student Finance Wallet</span>
+<div class="hidden sm:flex items-center bg-slate-100 rounded-full px-4 py-1.5 ml-4">
+<span class="material-symbols-outlined text-slate-400 text-sm">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm text-slate-600 placeholder:text-slate-400 w-48" placeholder="Search transactions..." type="text"/>
+</div>
+</div>
+<div class="flex items-center space-x-4">
+<button class="p-2 rounded-full hover:bg-slate-100 text-slate-500 transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<div class="h-8 w-8 rounded-full overflow-hidden border border-slate-200 cursor-pointer active:opacity-70 transition-opacity">
+<img alt="User Profile Avatar" data-alt="Close-up portrait of a professional male student smiling in a well-lit campus indoor setting, clean corporate aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCah-vDOjEsA1M1_piWC5d-0uQFT8wI2ckCdmqm6FHoIVrN7x1YleOju9-K7-V1P2Dyb9MMNDyHUZxc3cgIXUzAE8ux7dkTSgXNE2l8-tP5E6F74yCZvcqpgnyTmmH0EqSrLOUKnDqtuFQqZvDZqicCV_dIVz54WEHTAzjKIctlnnWWkxIB0nudjBhIfK2HvbOnhB6sudDad778TdqKxx2AoOwKRcRwwEnsP0njN8WUjLIUlujlMGeN_vxCvq0zsztvTKdzgF5qwJI"/>
+</div>
+</div>
+</header>
+<div class="flex">
+<!-- SideNavBar -->
+<nav class="bg-white text-blue-900 font-manrope text-sm font-medium h-screen w-64 border-r fixed left-0 top-0 hidden md:flex flex-col border-r border-slate-100 z-30 pt-20">
+<div class="flex flex-col p-4 space-y-2">
+<div class="mb-6 px-2">
+<h2 class="text-xl font-bold text-black">Student Finance Wallet</h2>
+<p class="text-xs text-slate-500 font-normal uppercase tracking-wider">Academic Ecosystem</p>
+</div>
+<a class="flex items-center gap-3 px-4 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-blue-900 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2.5 bg-slate-100 text-blue-900 rounded-lg font-bold transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="receipt_long">receipt_long</span>
+<span>Billing</span>
+</a>
+</div>
+<div class="mt-auto flex flex-col p-4 space-y-2 border-t border-slate-100">
+<a class="flex items-center gap-3 px-4 py-2.5 text-slate-600 hover:bg-slate-50 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span>Settings</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2.5 text-slate-600 hover:bg-slate-50 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+<span>Support</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 md:ml-64 p-6 lg:p-8">
+<!-- Breadcrumbs & Header -->
+<div class="mb-8">
+<nav class="flex items-center gap-2 text-on-secondary-container text-body-sm mb-4">
+<a class="hover:text-primary transition-colors flex items-center gap-1" href="#">
+<span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                    Back to dashboard
+                </a>
+</nav>
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div>
+<h1 class="font-h1 text-h1 text-primary">Billing &amp; Invoicing</h1>
+<p class="font-body-md text-on-surface-variant">Semester Fall 2024 • Academic ID: IAE-8842</p>
+</div>
+<div class="flex items-center gap-3">
+<button class="px-4 py-2 bg-white border border-slate-200 rounded-lg text-body-sm font-medium text-secondary hover:bg-slate-50 transition-colors shadow-sm">
+                        Download PDF
+                    </button>
+<button class="px-4 py-2 bg-primary text-on-primary rounded-lg text-body-sm font-bold shadow-md hover:shadow-lg transition-all active:scale-95">
+                        Pay Total Balance
+                    </button>
+</div>
+</div>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+<!-- Current Statement Card (Left) -->
+<div class="lg:col-span-8 space-y-6">
+<!-- Breakdown Card -->
+<div class="bg-white border border-slate-200/50 rounded-xl shadow-sm p-6 overflow-hidden relative">
+<div class="absolute top-0 left-0 w-full h-1 bg-primary"></div>
+<h3 class="font-h3 text-h3 text-primary mb-6">Statement Breakdown</h3>
+<div class="space-y-4">
+<!-- Tuition Item -->
+<div class="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-100">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-900">
+<span class="material-symbols-outlined">school</span>
+</div>
+<div>
+<p class="font-label-bold text-label-bold uppercase text-on-secondary-container">Category: Academic</p>
+<p class="font-h3 text-body-md font-bold">Tuition (Standard Rate)</p>
+</div>
+</div>
+<p class="font-data-mono text-data-mono text-primary">$2,800.00</p>
+</div>
+<!-- Lab Fees Item -->
+<div class="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-100">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-900">
+<span class="material-symbols-outlined">science</span>
+</div>
+<div>
+<p class="font-label-bold text-label-bold uppercase text-on-secondary-container">Category: Facility</p>
+<p class="font-h3 text-body-md font-bold">Lab Fees (Computer Science Dept)</p>
+</div>
+</div>
+<p class="font-data-mono text-data-mono text-primary">$450.00</p>
+</div>
+<!-- Miscellaneous Item -->
+<div class="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-100">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-900">
+<span class="material-symbols-outlined">payments</span>
+</div>
+<div>
+<p class="font-label-bold text-label-bold uppercase text-on-secondary-container">Category: Other</p>
+<p class="font-h3 text-body-md font-bold">Miscellaneous Fees</p>
+</div>
+</div>
+<p class="font-data-mono text-data-mono text-primary">$250.00</p>
+</div>
+</div>
+<!-- Summary Footer -->
+<div class="mt-8 pt-6 border-t border-slate-100 flex flex-col items-end gap-2">
+<div class="flex items-center gap-12 text-on-surface-variant">
+<span class="font-body-md">Subtotal</span>
+<span class="font-data-mono">₱3,500.00</span>
+</div>
+<div class="flex items-center gap-12 text-error font-medium">
+<span class="font-body-md">Pending Adjustments</span>
+<span class="font-data-mono">-₱200.00</span>
+</div>
+<div class="flex items-center gap-12 mt-2">
+<span class="font-h2 text-h2 text-primary">Total Balance</span>
+<span class="font-h2 text-h2 text-primary">₱3,300.00</span>
+</div>
+</div>
+</div>
+<!-- Itemized History Table -->
+<div class="bg-white border border-slate-200/50 rounded-xl shadow-sm overflow-hidden">
+<div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+<h3 class="font-h3 text-body-lg font-bold">Transaction History</h3>
+<button class="text-blue-900 text-body-sm font-semibold hover:underline">View All Records</button>
+</div>
+<table class="w-full text-left">
+<thead class="bg-white text-on-surface-variant">
+<tr>
+<th class="px-6 py-4 font-label-bold text-label-bold uppercase tracking-wider">Date</th>
+<th class="px-6 py-4 font-label-bold text-label-bold uppercase tracking-wider">Description</th>
+<th class="px-6 py-4 font-label-bold text-label-bold uppercase tracking-wider">Status</th>
+<th class="px-6 py-4 font-label-bold text-label-bold uppercase tracking-wider text-right">Amount</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100">
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="px-6 py-4 font-data-mono text-body-sm">Aug 24, 2024</td>
+<td class="px-6 py-4 font-body-md">Fall Semester Registration Fee</td>
+<td class="px-6 py-4">
+<span class="px-2.5 py-1 bg-[#10b98126] text-[#059669] rounded-full text-[12px] font-bold">Cleared</span>
+</td>
+<td class="px-6 py-4 font-data-mono text-body-md text-right">₱150.00</td>
+</tr>
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="px-6 py-4 font-data-mono text-body-sm">Sep 02, 2024</td>
+<td class="px-6 py-4 font-body-md">Advanced Java Lab Resource Pack</td>
+<td class="px-6 py-4">
+<span class="px-2.5 py-1 bg-slate-100 text-slate-500 rounded-full text-[12px] font-bold">Pending</span>
+</td>
+<td class="px-6 py-4 font-data-mono text-body-md text-right">₱450.00</td>
+</tr>
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="px-6 py-4 font-data-mono text-body-sm">Sep 15, 2024</td>
+<td class="px-6 py-4 font-body-md">Late Enrollment Fee (CSS Adjustment)</td>
+<td class="px-6 py-4">
+<span class="px-2.5 py-1 bg-[#ef44441a] text-[#b91c1c] rounded-full text-[12px] font-bold">Overdue</span>
+</td>
+<td class="px-6 py-4 font-data-mono text-body-md text-right">₱25.00</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Right Sidebar (Adjustments & Metrics) -->
+<div class="lg:col-span-4 space-y-6">
+<!-- Adjustment Notices -->
+<div class="bg-white border border-slate-200/50 rounded-xl shadow-sm p-6">
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-amber-500">campaign</span>
+<h3 class="font-h3 text-body-lg font-bold">Adjustment Notices</h3>
+</div>
+<div class="space-y-4">
+<div class="p-4 rounded-lg bg-amber-50 border border-amber-100 relative">
+<p class="text-body-sm font-bold text-amber-900 mb-1">Course Shifting Update</p>
+<p class="text-body-sm text-amber-800 leading-relaxed">CSS has confirmed your shift from Data Ethics to CS-402. A credit of ₱200.00 will be applied to your next statement.</p>
+<p class="text-[11px] mt-2 text-amber-700/60 font-semibold tracking-wider">REF ID: CSS-4491-01</p>
+</div>
+<div class="p-4 rounded-lg bg-slate-50 border border-slate-100">
+<p class="text-body-sm font-bold text-primary mb-1">Scholarship Credit</p>
+<p class="text-body-sm text-on-surface-variant">Academic Excellence credit verified. Status: In-review.</p>
+</div>
+</div>
+<button class="w-full mt-6 text-center text-body-sm font-bold text-blue-900 py-2 border border-blue-900 rounded-lg hover:bg-blue-50 transition-colors">
+                        Appeal an Adjustment
+                    </button>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Student Finance Wallet - Admin Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-container-highest": "#e3e2e5",
+                      "primary-fixed-dim": "#afc8f0",
+                      "error": "#ba1a1a",
+                      "tertiary": "#000802",
+                      "error-container": "#ffdad6",
+                      "surface-container-lowest": "#ffffff",
+                      "on-error-container": "#93000a",
+                      "tertiary-fixed-dim": "#66dd8b",
+                      "inverse-on-surface": "#f2f0f3",
+                      "background": "#faf9fc",
+                      "outline": "#74777f",
+                      "on-surface-variant": "#43474e",
+                      "inverse-surface": "#2f3033",
+                      "surface-dim": "#dbd9dd",
+                      "primary": "#001F3F",
+                      "on-secondary-fixed": "#0d1d2a",
+                      "primary-container": "#001F3F",
+                      "on-surface": "#1a1c1e",
+                      "secondary-fixed-dim": "#b8c8da",
+                      "on-secondary-fixed-variant": "#394857",
+                      "tertiary-container": "#00250e",
+                      "on-background": "#1a1c1e",
+                      "surface-bright": "#faf9fc",
+                      "primary-fixed": "#d4e3ff",
+                      "secondary-fixed": "#d4e4f6",
+                      "on-secondary-container": "#556474",
+                      "on-primary": "#ffffff",
+                      "on-primary-container": "#6f88ad",
+                      "secondary": "#50606f",
+                      "outline-variant": "#c4c6cf",
+                      "on-tertiary-fixed": "#00210c",
+                      "on-primary-fixed-variant": "#2f486a",
+                      "on-tertiary-container": "#119b50",
+                      "surface": "#faf9fc",
+                      "on-tertiary-fixed-variant": "#005227",
+                      "surface-variant": "#e3e2e5",
+                      "on-error": "#ffffff",
+                      "on-tertiary": "#ffffff",
+                      "surface-container": "#efedf0",
+                      "secondary-container": "#d1e1f4",
+                      "on-primary-fixed": "#001c3a",
+                      "surface-tint": "#476083",
+                      "surface-container-high": "#e9e7eb",
+                      "tertiary-fixed": "#83fba5",
+                      "inverse-primary": "#afc8f0",
+                      "surface-container-low": "#f4f3f6",
+                      "on-secondary": "#ffffff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "xs": "4px",
+                      "unit": "8px",
+                      "margin": "24px",
+                      "xl": "32px",
+                      "sm": "8px",
+                      "gutter": "16px",
+                      "lg": "24px",
+                      "md": "16px",
+                      "container-max": "1200px"
+              },
+              "fontFamily": {
+                      "h1": ["Manrope"],
+                      "label-bold": ["Manrope"],
+                      "h3": ["Manrope"],
+                      "body-sm": ["Manrope"],
+                      "body-lg": ["Manrope"],
+                      "body-md": ["Manrope"],
+                      "h2": ["Manrope"],
+                      "data-mono": ["Manrope"]
+              },
+              "fontSize": {
+                      "h1": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "label-bold": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                      "h3": ["20px", {"lineHeight": "1.4", "letterSpacing": "0", "fontWeight": "600"}],
+                      "body-sm": ["14px", {"lineHeight": "1.5", "letterSpacing": "0", "fontWeight": "400"}],
+                      "body-lg": ["18px", {"lineHeight": "1.6", "letterSpacing": "0", "fontWeight": "400"}],
+                      "body-md": ["16px", {"lineHeight": "1.5", "letterSpacing": "0", "fontWeight": "400"}],
+                      "h2": ["24px", {"lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                      "data-mono": ["16px", {"lineHeight": "1", "letterSpacing": "-0.02em", "fontWeight": "600"}]
+              }
+            },
+          },
+        }
+      </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        body {
+            background-color: #F8FAFC;
+        }
+    </style>
+</head>
+<body class="font-body-md text-on-surface">
+<div class="flex min-h-screen">
+<!-- Sidebar Navigation -->
+<aside class="w-64 bg-white border-r border-slate-200 flex flex-col fixed h-screen z-50">
+<div class="p-6">
+<h2 class="text-xl font-bold text-black mb-1">Student Finance Wallet</h2>
+<p class="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Academic Ecosystem</p>
+</div>
+<nav class="flex-1 px-4 py-2 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 bg-slate-50 text-primary font-bold rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="text-sm">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-slate-50 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="payments">payments</span>
+<span class="text-sm">Payment Management</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-slate-50 rounded-lg transition-colors" href="#">
+<img alt="Activity Logs" class="w-6 h-6 object-contain" src="https://lh3.googleusercontent.com/aida/ADBb0uhhEo4vOqna6sSUFnm2st3k3ioSVTY30A2N6YqkBDnP1uIedeZkeLrq-Ua1QQWg-brrr72li9kzssMhmN9NdRG6opXWvuJ1l1FSFNQoZSE3GVZdj7er8GbFZQash8mhVYdmKqEFXHfslcDFhLKHdn75xHymZZ7miAaS_qtzfm6YlnsgmdntgqSMlV5l6V4AG7igDcQ4_nhUKuy57-q221-I3NWawGFq2MMBN84-rn1TKmfz-eSyV3MKY_PyO7p7yohKKnIMKgDc"/>
+<span class="text-sm">Activity Logs</span>
+</a>
+</nav>
+<div class="p-4 border-t border-slate-100">
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-slate-50 rounded-lg mb-1" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="text-sm">Settings</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-slate-50 rounded-lg mb-4" href="#">
+<span class="material-symbols-outlined" data-icon="help_outline">help_outline</span>
+<span class="text-sm">Support</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<div class="flex-1 ml-64 flex flex-col">
+<!-- Header -->
+<header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 sticky top-0 z-40">
+<div class="flex items-center gap-8 flex-1">
+<h1 class="text-lg font-bold text-black whitespace-nowrap">Student Finance Wallet</h1>
+<div class="max-w-md w-full relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" style="font-size: 18px;">search</span>
+<input class="w-full bg-slate-50 border-none rounded-full py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary/10" placeholder="Global search..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<button class="relative text-slate-500 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-0 right-0 w-2 h-2 bg-error rounded-full border-2 border-white"></span>
+</button>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-slate-200">
+<img alt="Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA6QvEjgdE9mfvwCK80L_CO8Y1c4dIGsArLN-6x83PbvsVNmE7jbL0zMyeBDMDzSTgPORUdGywlnOUL54q8GQ04KsO4GvrrC6ZILdAVLz47rTd-dNEc66b6DimRxgit7X0bhGqY4IF97BTXoxaZpsOGZeI5_RbdTeTIclRZPLfKaSRIpFe9SVGn9fV4dVBzKRhtb8sxhtZ38PAd58IUSCEFsIyP-mFiGQaz4M3vN8mkbB-XuqDD4gkyaQnvl0QeSDr-DWIOxKYIEO8"/>
+</div>
+</div>
+</header>
+<!-- Content Canvas -->
+<main class="p-8">
+<div class="mb-8 flex justify-between items-end">
+<div>
+<h2 class="text-3xl font-bold text-primary mb-1">System Dashboard</h2>
+<p class="text-slate-500">Overview of student financial flows and system health.</p>
+</div>
+<button class="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-bold text-slate-700 hover:bg-slate-50">
+<span class="material-symbols-outlined text-lg" data-icon="calendar_today">calendar_today</span>
+                    Last 30 Days
+                </button>
+</div>
+<!-- Dashboard Grid -->
+<div class="grid grid-cols-12 gap-8">
+<!-- Metrics Sidebar -->
+<div class="col-span-12 lg:col-span-4 space-y-6">
+<!-- Total Collections Card -->
+<div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden">
+<div class="absolute top-0 left-0 w-1.5 h-full bg-primary"></div>
+<div class="flex justify-between items-start mb-6">
+<div class="p-2.5 bg-slate-50 rounded-lg">
+<span class="material-symbols-outlined text-primary" data-icon="payments">payments</span>
+</div>
+<span class="text-emerald-600 text-[10px] font-bold bg-emerald-50 px-2 py-1 rounded">+12.5%</span>
+</div>
+<p class="text-slate-500 text-sm font-medium mb-1">Total Collections</p>
+<h3 class="text-4xl font-extrabold text-primary mb-4">₱4.2M</h3>
+<div class="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+<div class="h-full bg-primary" style="width: 75%"></div>
+</div>
+<p class="mt-2 text-[11px] text-slate-400 font-medium">75% of semester target reached</p>
+</div>
+<!-- Pending Approvals Card -->
+<div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden">
+<div class="absolute top-0 left-0 w-1.5 h-full bg-slate-400"></div>
+<div class="flex justify-between items-start mb-6">
+<div class="p-2.5 bg-slate-50 rounded-lg">
+<span class="material-symbols-outlined text-slate-600" data-icon="pending_actions">pending_actions</span>
+</div>
+<span class="text-slate-500 text-[10px] font-bold bg-slate-100 px-2 py-1 rounded">Urgent</span>
+</div>
+<p class="text-slate-500 text-sm font-medium mb-1">Pending Approvals</p>
+<h3 class="text-4xl font-extrabold text-slate-800 mb-4">12</h3>
+<div class="flex items-center gap-3">
+<div class="flex -space-x-2">
+<img alt="User 1" class="w-7 h-7 rounded-full border-2 border-white object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC_ux38HeVz_8XcDS6F3lZoQdpRZS5Ig6m6RHPPBcDLq8ORp4_Fdk0NZ6-o_XFWv5IZpEXtz1FQ90OfebgzT5VjkvLc54CJm6NOJmS6Osbyq1YXi5OmzCjLSjCG-iCK0oHCNz9wH045TldWHcerN6QyU61j9Q1hjDJNNRQf8HU_cKEzmEouphpwwTjCzXEadX2uK2QV_I36APNTIdYu1VnNXThYn_JTNSXOGGw9dZOPjisLF_r3cS_j1_ZXAGQ_MmLqmZyOACcQzSE"/>
+<img alt="User 2" class="w-7 h-7 rounded-full border-2 border-white object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCr9u3AGbBNQ5ssbhe5HSyBiln3ieJNc4UoRVle2945swmDsYIiYY4p68iDnO8_4gzokuACqCNq01ANUk8jMlICURObxwZvdxHGS4RANAPS9zKUeSNjCeGowSiy8qzk12e780lY3O8kJVQ5yebta_zu1Pk7nJsgAkoHm344D26c83hq-E9yC0tathqq7p1-8ypD6w8Yt8jKsvkAo5gfg2pT4SeTU0vROYXVorrsrd6XlsDJb9Shgmh6oM38N55Zt2ptoyCBa2CXZUU"/>
+<div class="w-7 h-7 rounded-full border-2 border-white bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-500">+10</div>
+</div>
+<span class="text-[11px] text-slate-400 font-medium">Verification required</span>
+</div>
+</div>
+</div>
+<!-- Trends Visualization -->
+<div class="col-span-12 lg:col-span-8 bg-white p-8 rounded-xl border border-slate-200 shadow-sm flex flex-col">
+<div class="flex justify-between items-start mb-8">
+<div>
+<h3 class="text-xl font-bold text-primary">Collection Trends</h3>
+<p class="text-sm text-slate-500">Weekly revenue distribution vs historical average</p>
+</div>
+<div class="flex gap-4">
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-sm bg-primary"></span>
+<span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Actual</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-sm bg-slate-200"></span>
+<span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Forecast</span>
+</div>
+</div>
+</div>
+<div class="flex-1 flex items-end gap-4 mb-6 px-2 min-h-[240px]">
+<div class="flex-1 h-full flex flex-col justify-end gap-1">
+<div class="w-full bg-slate-100 rounded-t-lg relative h-[40%] group transition-all hover:bg-slate-200">
+<div class="absolute bottom-0 w-full bg-primary rounded-t-lg" style="height: 80%"></div>
+</div>
+<span class="text-[10px] text-center font-bold text-slate-400 mt-2">MON</span>
+</div>
+<div class="flex-1 h-full flex flex-col justify-end gap-1">
+<div class="w-full bg-slate-100 rounded-t-lg relative h-[60%] group transition-all hover:bg-slate-200">
+<div class="absolute bottom-0 w-full bg-primary rounded-t-lg" style="height: 70%"></div>
+</div>
+<span class="text-[10px] text-center font-bold text-slate-400 mt-2">TUE</span>
+</div>
+<div class="flex-1 h-full flex flex-col justify-end gap-1">
+<div class="w-full bg-slate-100 rounded-t-lg relative h-[80%] group transition-all hover:bg-slate-200">
+<div class="absolute bottom-0 w-full bg-primary rounded-t-lg" style="height: 90%"></div>
+</div>
+<span class="text-[10px] text-center font-bold text-slate-400 mt-2">WED</span>
+</div>
+<div class="flex-1 h-full flex flex-col justify-end gap-1">
+<div class="w-full bg-slate-100 rounded-t-lg relative h-[70%] group transition-all hover:bg-slate-200">
+<div class="absolute bottom-0 w-full bg-primary rounded-t-lg" style="height: 60%"></div>
+</div>
+<span class="text-[10px] text-center font-bold text-slate-400 mt-2">THU</span>
+</div>
+<div class="flex-1 h-full flex flex-col justify-end gap-1">
+<div class="w-full bg-slate-100 rounded-t-lg relative h-[90%] group transition-all hover:bg-slate-200">
+<div class="absolute bottom-0 w-full bg-primary rounded-t-lg" style="height: 85%"></div>
+</div>
+<span class="text-[10px] text-center font-bold text-slate-400 mt-2">FRI</span>
+</div>
+<div class="flex-1 h-full flex flex-col justify-end gap-1">
+<div class="w-full bg-slate-100 rounded-t-lg relative h-[50%] group transition-all hover:bg-slate-200">
+<div class="absolute bottom-0 w-full bg-primary rounded-t-lg" style="height: 40%"></div>
+</div>
+<span class="text-[10px] text-center font-bold text-slate-400 mt-2">SAT</span>
+</div>
+<div class="flex-1 h-full flex flex-col justify-end gap-1">
+<div class="w-full bg-slate-100 rounded-t-lg relative h-[65%] group transition-all hover:bg-slate-200">
+<div class="absolute bottom-0 w-full bg-primary rounded-t-lg" style="height: 55%"></div>
+</div>
+<span class="text-[10px] text-center font-bold text-slate-400 mt-2">SUN</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4 mt-auto pt-8 border-t border-slate-100">
+<button class="flex items-center justify-center gap-3 py-3.5 border border-slate-200 rounded-xl hover:bg-slate-50 transition-all font-bold text-primary text-sm">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+                            Export Daily Report
+                        </button>
+<button class="flex items-center justify-center gap-3 py-3.5 border border-slate-200 rounded-xl hover:bg-slate-50 transition-all font-bold text-primary text-sm">
+<span class="material-symbols-outlined" data-icon="fact_check">fact_check</span>
+                            Bulk Verify Payments
+                        </button>
+</div>
+</div>
+<!-- Transaction Table -->
+<div class="col-span-12 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+<div class="px-8 py-6 border-b border-slate-100 flex justify-between items-center">
+<h3 class="text-xl font-bold text-primary">Critical Events &amp; Transactions</h3>
+<button class="text-sm font-bold text-primary hover:underline">View Full Audit Log</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="bg-slate-50/50">
+<tr>
+<th class="px-8 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Entity</th>
+<th class="px-8 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Event Type</th>
+<th class="px-8 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Amount</th>
+<th class="px-8 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Time</th>
+<th class="px-8 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-right">Status</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100">
+<tr class="hover:bg-slate-50/30 transition-colors">
+<td class="px-8 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-600">JD</div>
+<div>
+<p class="text-sm font-bold text-slate-800">John Doe (Student)</p>
+<p class="text-[11px] text-slate-400">ID: #STU-99812</p>
+</div>
+</div>
+</td>
+<td class="px-8 py-4">
+<span class="text-sm font-medium">Tuition Installment</span>
+</td>
+<td class="px-8 py-4 font-semibold text-primary">₱45,000.00</td>
+<td class="px-8 py-4 text-sm text-slate-500">2 mins ago</td>
+<td class="px-8 py-4 text-right">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700">Cleared</span>
+</td>
+</tr>
+<tr class="hover:bg-slate-50/30 transition-colors">
+<td class="px-8 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-600">AS</div>
+<div>
+<p class="text-sm font-bold text-slate-800">Alice Smith (Student)</p>
+<p class="text-[11px] text-slate-400">ID: #STU-99815</p>
+</div>
+</div>
+</td>
+<td class="px-8 py-4">
+<span class="text-sm font-medium">Lab Fees Refund</span>
+</td>
+<td class="px-8 py-4 font-semibold text-primary">₱1,250.00</td>
+<td class="px-8 py-4 text-sm text-slate-500">14 mins ago</td>
+<td class="px-8 py-4 text-right">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700">Pending</span>
+</td>
+</tr>
+<tr class="hover:bg-slate-50/30 transition-colors">
+<td class="px-8 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center text-red-600">
+<span class="material-symbols-outlined text-sm">report</span>
+</div>
+<div>
+<p class="text-sm font-bold text-slate-800">System Kernel</p>
+<p class="text-[11px] text-slate-400">Security Override</p>
+</div>
+</div>
+</td>
+<td class="px-8 py-4">
+<span class="text-sm font-medium">Batch Reconciliation Failure</span>
+</td>
+<td class="px-8 py-4 font-semibold text-primary">—</td>
+<td class="px-8 py-4 text-sm text-slate-500">45 mins ago</td>
+<td class="px-8 py-4 text-right">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-700">Escalated</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<footer class="mt-16 text-center text-slate-400 text-[11px] pb-12 font-medium">
+<p>© 2024 Student Finance Wallet Admin Terminal • All transactions encrypted with 256-bit SSL</p>
+</footer>
+</main>
+</div>
+</div>
+</body></html>

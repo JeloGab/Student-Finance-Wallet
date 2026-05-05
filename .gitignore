@@ -21,6 +21,9 @@ client/dist/
 logs/
 *.log
 npm-debug.log*
+PROJECT_NOTES.md
+SESSION_2026-04-28.MD
+SESSION_2026-05-02.MD
 
 # OS
 .DS_Store
