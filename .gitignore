@@ -21,9 +21,17 @@ client/dist/
 logs/
 *.log
 npm-debug.log*
+
+# Design reference folders
+Admin Activity Logs/
+Admin Dashboard/
+Student Billing/
+Student Dashboard/
+
+# Local notes and session files
 PROJECT_NOTES.md
-SESSION_2026-04-28.MD
-SESSION_2026-05-02.MD
+SESSION_2026-04-28.md
+SESSION_2026-05-02.md
 
 # OS
 .DS_Store
