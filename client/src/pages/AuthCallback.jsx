@@ -11,7 +11,7 @@ export default function AuthCallback() {
       const role = session.user.user_metadata?.role
 
       if (role === 'finance_staff') {
-        navigate('/finance/payments')
+        navigate('/admin/dashboard')
         return
       }
 

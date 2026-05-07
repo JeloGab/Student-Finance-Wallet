@@ -30,7 +30,7 @@ export default function Login() {
 
     const role = data.user.user_metadata?.role
     if (role === 'finance_staff') {
-      navigate('/finance/payments')
+      navigate('/admin/dashboard')
     } else {
       navigate('/dashboard')
     }
