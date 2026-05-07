@@ -63,7 +63,8 @@ const recordPayment = async (req, res) => {
       student_id,
       action: 'PAYMENT_RECORDED',
       performed_by: recorded_by,
-      details: { amount, reference_no, payment_method, new_status: newStatus }
+      details: { amount, reference_no, payment_method, new_status: newStatus },
+      logged_at: new Date().toISOString()
     })
 
     return res.status(201).json({

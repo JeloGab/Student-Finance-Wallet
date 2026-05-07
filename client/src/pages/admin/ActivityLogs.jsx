@@ -1,101 +1,95 @@
-const stats = [
-  {
-    label: 'TOTAL LOGS',
-    value: '12,842',
-    icon: 'database',
-    iconClass: 'text-on-primary-container',
-    sub: '+234 this week',
-    subClass: 'text-on-tertiary-container',
-    subIcon: 'trending_up',
-  },
-  {
-    label: 'FAILED ATTEMPTS',
-    value: '3',
-    icon: 'gpp_maybe',
-    iconClass: 'text-error',
-    sub: 'Last failure: 2h ago',
-    subClass: 'text-on-surface-variant',
-    subIcon: null,
-  },
-  {
-    label: 'ADMIN ACTIONS',
-    value: '45',
-    icon: 'admin_panel_settings',
-    iconClass: 'text-on-secondary-container',
-    sub: 'Requires 2FA verification',
-    subClass: 'text-on-surface-variant',
-    subIcon: null,
-  },
-  {
-    label: 'AVG DURATION',
-    value: '12.4s',
-    icon: 'timer',
-    iconClass: 'text-on-primary-container',
-    sub: 'System healthy',
-    subClass: 'text-on-tertiary-container',
-    subIcon: 'check_circle',
-  },
-]
+import { useState, useEffect, useCallback } from 'react'
+import api from '../../lib/api'
 
-const logs = [
-  {
-    date: 'Oct 24, 2023',
-    time: '14:32:01 PM',
-    initials: 'MS',
-    initialsClass: 'bg-blue-100 text-blue-700',
-    user: 'Marcus Sterling',
-    action: 'TUITION_PAYMENT',
-    description: 'Processed payment for Semester 1 (Spring 2024) via ACH Transfer.',
-    status: 'CLEARED',
-    statusClass: 'bg-emerald-100 text-emerald-700',
-  },
-  {
-    date: 'Oct 24, 2023',
-    time: '11:15:44 AM',
-    initials: 'SYS',
-    initialsClass: 'bg-slate-100 text-slate-700',
-    user: 'System Automator',
-    action: 'RECURRING_BILL',
-    description: 'Monthly Campus Housing Fee adjustment generated automatically.',
-    status: 'PENDING',
-    statusClass: 'bg-slate-100 text-slate-700',
-  },
-  {
-    date: 'Oct 23, 2023',
-    time: '16:05:22 PM',
-    initials: 'ADM',
-    initialsClass: 'bg-slate-100 text-slate-700',
-    user: 'Admin Portal',
-    action: 'ACCOUNT_LOCK',
-    description: 'Security lock applied after 3 failed login attempts from unknown IP.',
-    status: 'OVERDUE',
-    statusClass: 'bg-red-100 text-red-700',
-  },
-  {
-    date: 'Oct 23, 2023',
-    time: '09:40:11 AM',
-    initials: 'MS',
-    initialsClass: 'bg-blue-100 text-blue-700',
-    user: 'Marcus Sterling',
-    action: 'PROFILE_UPDATE',
-    description: 'Primary contact email changed to university address.',
-    status: 'CLEARED',
-    statusClass: 'bg-emerald-100 text-emerald-700',
-  },
-  {
-    date: 'Oct 22, 2023',
-    time: '13:21:55 PM',
-    initials: 'SYS',
-    initialsClass: 'bg-slate-100 text-slate-700',
-    user: 'System Automator',
-    action: 'TOKEN_REFRESH',
-    description: 'Security session token refreshed for mobile banking app.',
-    status: 'CLEARED',
-    statusClass: 'bg-emerald-100 text-emerald-700',
-  },
-]
+const formatDate = (dateStr) => {
+  const d = new Date(dateStr)
+  return {
+    date: d.toLocaleDateString('en-PH', { month: 'short', day: '2-digit', year: 'numeric' }),
+    time: d.toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+  }
+}
+
+const buildDescription = (action, details) => {
+  if (!details) return action
+  switch (action) {
+    case 'PAYMENT_RECORDED':
+      return `Payment of ₱${Number(details.amount).toLocaleString()} recorded via ${details.payment_method} (Ref: ${details.reference_no})`
+    default:
+      return JSON.stringify(details)
+  }
+}
+
+const statusBadge = (action, details) => {
+  const status = details?.new_status ?? 'RECORDED'
+  if (status === 'CLEARED') return { label: 'CLEARED', cls: 'bg-emerald-100 text-emerald-700' }
+  if (status === 'ON_HOLD') return { label: 'ON HOLD', cls: 'bg-slate-100 text-slate-700' }
+  return { label: status, cls: 'bg-slate-100 text-slate-700' }
+}
+
+const initials = (email) => {
+  if (!email) return '?'
+  return email.split('@')[0].slice(0, 2).toUpperCase()
+}
 
 export default function ActivityLogs() {
+  const [data, setData] = useState(null)
+  const [page, setPage] = useState(1)
+  const [loading, setLoading] = useState(true)
+
+  const fetchLogs = useCallback((p) => {
+    setLoading(true)
+    api.get(`/api/admin/activity-logs?page=${p}`)
+      .then(({ data }) => setData(data))
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [])
+
+  useEffect(() => { fetchLogs(page) }, [page, fetchLogs])
+
+  const logs = data?.logs ?? []
+  const stats = data?.stats
+  const totalPages = data?.total_pages ?? 1
+  const total = data?.total ?? 0
+
+  const statCards = [
+    {
+      label: 'TOTAL LOGS',
+      value: stats ? total.toLocaleString() : '—',
+      icon: 'database',
+      iconClass: 'text-on-primary-container',
+      sub: stats ? `${stats.week_count} this week` : '',
+      subClass: 'text-on-tertiary-container',
+      subIcon: 'trending_up',
+    },
+    {
+      label: "TODAY'S ACTIVITY",
+      value: stats ? stats.today_count : '—',
+      icon: 'today',
+      iconClass: 'text-on-secondary-container',
+      sub: 'Actions recorded today',
+      subClass: 'text-on-surface-variant',
+      subIcon: null,
+    },
+    {
+      label: 'UNIQUE STAFF',
+      value: stats ? stats.unique_staff : '—',
+      icon: 'admin_panel_settings',
+      iconClass: 'text-on-secondary-container',
+      sub: 'Staff with recorded actions',
+      subClass: 'text-on-surface-variant',
+      subIcon: null,
+    },
+    {
+      label: 'THIS WEEK',
+      value: stats ? stats.week_count : '—',
+      icon: 'calendar_month',
+      iconClass: 'text-on-primary-container',
+      sub: 'Last 7 days',
+      subClass: 'text-on-tertiary-container',
+      subIcon: 'check_circle',
+    },
+  ]
+
   return (
     <div>
       {/* Page Header */}
@@ -118,7 +112,7 @@ export default function ActivityLogs() {
 
       {/* Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        {stats.map((s) => (
+        {statCards.map((s) => (
           <div key={s.label} className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
             <div className="flex items-center justify-between mb-2">
               <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">{s.label}</span>
@@ -139,32 +133,17 @@ export default function ActivityLogs() {
         {/* Filtering Bar */}
         <div className="p-4 border-b border-slate-100 bg-slate-50/50 flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <button className="bg-white border border-slate-200 px-3 py-1.5 rounded-lg text-sm font-bold text-slate-700 flex items-center gap-2 hover:bg-slate-50 transition-colors">
-              <span className="material-symbols-outlined text-[18px]">filter_list</span>
-              Filters
-            </button>
-            <div className="h-6 w-px bg-slate-200 mx-2" />
-            <span className="text-sm text-slate-500">Showing 1–15 of 12,842</span>
+            <span className="text-sm text-slate-500">
+              {loading ? 'Loading...' : `Showing ${logs.length === 0 ? 0 : ((page - 1) * 15) + 1}–${((page - 1) * 15) + logs.length} of ${total.toLocaleString()}`}
+            </span>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="bg-white border border-slate-200 px-3 py-1.5 rounded-lg text-sm flex items-center gap-2">
-              <span className="text-slate-500">Status:</span>
-              <select className="bg-transparent border-none p-0 focus:ring-0 font-bold text-slate-700 cursor-pointer outline-none text-sm">
-                <option>All</option>
-                <option>Cleared</option>
-                <option>Pending</option>
-                <option>Overdue</option>
-              </select>
-            </div>
-            <div className="bg-white border border-slate-200 px-3 py-1.5 rounded-lg text-sm flex items-center gap-2">
-              <span className="text-slate-500">Date:</span>
-              <select className="bg-transparent border-none p-0 focus:ring-0 font-bold text-slate-700 cursor-pointer outline-none text-sm">
-                <option>Last 30 Days</option>
-                <option>Last 7 Days</option>
-                <option>This Semester</option>
-              </select>
-            </div>
-          </div>
+          <button
+            onClick={() => fetchLogs(page)}
+            className="bg-white border border-slate-200 px-3 py-1.5 rounded-lg text-sm font-bold text-slate-700 flex items-center gap-2 hover:bg-slate-50 transition-colors"
+          >
+            <span className="material-symbols-outlined text-[18px]">refresh</span>
+            Refresh
+          </button>
         </div>
 
         {/* Data Table */}
@@ -173,63 +152,95 @@ export default function ActivityLogs() {
             <thead>
               <tr className="bg-slate-50/50">
                 <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">Date &amp; Time</th>
-                <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">User</th>
+                <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">Performed By</th>
                 <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">Action</th>
                 <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">Description</th>
+                <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">Student</th>
                 <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">Status</th>
-                <th className="px-6 py-4 border-b border-slate-100" />
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
-              {logs.map((log, i) => (
-                <tr key={i} className="hover:bg-slate-50/30 transition-colors">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-bold text-slate-800">{log.date}</div>
-                    <div className="text-[12px] text-slate-400">{log.time}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center gap-2">
-                      <div className={`h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-bold ${log.initialsClass}`}>
-                        {log.initials}
-                      </div>
-                      <div className="text-sm font-medium text-slate-800">{log.user}</div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm font-bold text-on-primary-container">{log.action}</span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="text-sm text-slate-600 truncate max-w-xs">{log.description}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold ${log.statusClass}`}>
-                      {log.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <button className="text-slate-400 hover:text-primary transition-colors">
-                      <span className="material-symbols-outlined text-[20px]">more_vert</span>
-                    </button>
-                  </td>
+              {loading ? (
+                <tr>
+                  <td colSpan={6} className="px-6 py-10 text-center text-sm text-slate-400">Loading...</td>
                 </tr>
-              ))}
+              ) : logs.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-6 py-10 text-center text-sm text-slate-400">No activity logs yet.</td>
+                </tr>
+              ) : (
+                logs.map((log) => {
+                  const { date, time } = formatDate(log.logged_at)
+                  const badge = statusBadge(log.action, log.details)
+                  return (
+                    <tr key={log.id} className="hover:bg-slate-50/30 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-bold text-slate-800">{date}</div>
+                        <div className="text-[12px] text-slate-400">{time}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-2">
+                          <div className="h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center text-[10px] font-bold text-blue-700">
+                            {initials(log.performed_by)}
+                          </div>
+                          <div className="text-sm font-medium text-slate-800">{log.performed_by}</div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="text-sm font-bold text-on-primary-container">{log.action}</span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-sm text-slate-600 truncate max-w-xs">
+                          {buildDescription(log.action, log.details)}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-data-mono text-slate-600">{log.student_id ?? '—'}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold ${badge.cls}`}>
+                          {badge.label}
+                        </span>
+                      </td>
+                    </tr>
+                  )
+                })
+              )}
             </tbody>
           </table>
         </div>
 
         {/* Pagination */}
         <div className="p-4 border-t border-slate-100 flex items-center justify-between">
-          <button className="text-sm text-slate-400 font-bold hover:text-primary disabled:opacity-50" disabled>
+          <button
+            onClick={() => setPage(p => Math.max(p - 1, 1))}
+            disabled={page === 1 || loading}
+            className="text-sm text-slate-400 font-bold hover:text-primary disabled:opacity-40 disabled:cursor-not-allowed"
+          >
             Previous
           </button>
           <div className="flex items-center gap-2">
-            <button className="w-8 h-8 rounded bg-primary text-white text-sm font-bold">1</button>
-            <button className="w-8 h-8 rounded text-slate-600 hover:bg-slate-100 text-sm">2</button>
-            <button className="w-8 h-8 rounded text-slate-600 hover:bg-slate-100 text-sm">3</button>
-            <span className="text-slate-400">...</span>
-            <button className="w-8 h-8 rounded text-slate-600 hover:bg-slate-100 text-sm">128</button>
+            {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+              const p = i + 1
+              return (
+                <button
+                  key={p}
+                  onClick={() => setPage(p)}
+                  className={`w-8 h-8 rounded text-sm font-bold transition-colors ${
+                    page === p ? 'bg-primary text-white' : 'text-slate-600 hover:bg-slate-100'
+                  }`}
+                >
+                  {p}
+                </button>
+              )
+            })}
+            {totalPages > 5 && <span className="text-slate-400">...</span>}
           </div>
-          <button className="text-sm text-slate-600 font-bold hover:text-primary">
+          <button
+            onClick={() => setPage(p => Math.min(p + 1, totalPages))}
+            disabled={page === totalPages || loading}
+            className="text-sm text-slate-600 font-bold hover:text-primary disabled:opacity-40 disabled:cursor-not-allowed"
+          >
             Next
           </button>
         </div>
