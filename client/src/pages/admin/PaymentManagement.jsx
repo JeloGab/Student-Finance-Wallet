@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import api from '../../lib/api'
 
 const PAYMENT_METHODS = [
@@ -16,6 +16,20 @@ const initialForm = {
   paymentMethod: 'GCASH',
 }
 
+const makeRow = () => ({
+  _id: Math.random().toString(36).slice(2),
+  studentId: '',
+  amount: '',
+  date: '',
+  referenceNo: '',
+  paymentMethod: 'GCASH',
+  verified: null,
+  verifyError: '',
+  verifying: false,
+  rowStatus: 'idle',
+  rowMsg: '',
+})
+
 export default function PaymentManagement() {
   const [form, setForm] = useState(initialForm)
   const [verifiedStudent, setVerifiedStudent] = useState(null)
@@ -24,8 +38,15 @@ export default function PaymentManagement() {
 
   const [recentPayments, setRecentPayments] = useState([])
   const [todayTotal, setTodayTotal] = useState(0)
+  const [todayCount, setTodayCount] = useState(0)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitMessage, setSubmitMessage] = useState(null)
+
+  // Batch modal state
+  const [batchOpen, setBatchOpen] = useState(false)
+  const [batchRows, setBatchRows] = useState([makeRow()])
+  const [batchSubmitting, setBatchSubmitting] = useState(false)
+  const [batchDone, setBatchDone] = useState(false)
 
   useEffect(() => {
     fetchRecentPayments()
@@ -37,7 +58,7 @@ export default function PaymentManagement() {
       const { data } = await api.get('/api/payments/recent')
       setRecentPayments(data)
     } catch {
-      // silent — ledger just stays empty
+      // silent
     }
   }
 
@@ -45,6 +66,7 @@ export default function PaymentManagement() {
     try {
       const { data } = await api.get('/api/payments/today-total')
       setTodayTotal(data.total)
+      setTodayCount(data.count)
     } catch {
       // silent
     }
@@ -109,9 +131,98 @@ export default function PaymentManagement() {
     }
   }
 
+  // ── Batch helpers ────────────────────────────────────────────────────────────
+
+  const openBatch = () => {
+    setBatchRows([makeRow()])
+    setBatchDone(false)
+    setBatchOpen(true)
+  }
+
+  const closeBatch = () => {
+    if (batchSubmitting) return
+    setBatchOpen(false)
+    if (batchDone) {
+      fetchRecentPayments()
+      fetchTodayTotal()
+    }
+  }
+
+  const updateRow = (id, patch) => {
+    setBatchRows(rows => rows.map(r => r._id === id ? { ...r, ...patch } : r))
+  }
+
+  const addRow = () => setBatchRows(rows => [...rows, makeRow()])
+
+  const removeRow = (id) => {
+    setBatchRows(rows => rows.length === 1 ? rows : rows.filter(r => r._id !== id))
+  }
+
+  const verifyBatchRow = async (id, studentId) => {
+    if (!studentId.trim()) return
+    updateRow(id, { verifying: true, verified: null, verifyError: '' })
+    try {
+      const { data } = await api.get(`/api/students/${studentId.trim()}`)
+      updateRow(id, { verified: data, verifying: false })
+    } catch (err) {
+      updateRow(id, {
+        verifyError: err.response?.data?.message || 'Not found',
+        verifying: false,
+      })
+    }
+  }
+
+  const submitBatch = async () => {
+    const pending = batchRows.filter(r => r.rowStatus !== 'success')
+
+    const invalid = pending.find(r => !r.verified || !r.amount || !r.date || !r.referenceNo)
+    if (invalid) {
+      alert('Please verify all students and fill in all required fields before submitting.')
+      return
+    }
+
+    setBatchSubmitting(true)
+
+    for (const row of pending) {
+      updateRow(row._id, { rowStatus: 'loading', rowMsg: '' })
+      try {
+        await api.post('/api/payments', {
+          student_id: row.studentId.trim(),
+          amount: parseFloat(row.amount),
+          payment_date: row.date,
+          reference_no: row.referenceNo.trim(),
+          payment_method: row.paymentMethod,
+        })
+        updateRow(row._id, { rowStatus: 'success', rowMsg: 'Recorded' })
+      } catch (err) {
+        updateRow(row._id, {
+          rowStatus: 'error',
+          rowMsg: err.response?.data?.message || 'Failed',
+        })
+      }
+    }
+
+    setBatchSubmitting(false)
+    setBatchDone(true)
+  }
+
+  // ── Display helpers ──────────────────────────────────────────────────────────
+
+  const handleExport = async () => {
+    try {
+      const response = await api.get('/api/payments/export', { responseType: 'blob' })
+      const url = URL.createObjectURL(new Blob([response.data], { type: 'text/csv' }))
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `payments-export-${new Date().toISOString().split('T')[0]}.csv`
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch {
+      alert('Failed to export. Please try again.')
+    }
+  }
+
   const todayMeterPct = Math.min((todayTotal / 1_000_000) * 100, 100)
-  const pendingCount = recentPayments.filter(p => p.status !== 'CLEARED').length
-  const pendingMeterPct = recentPayments.length > 0 ? Math.round((pendingCount / recentPayments.length) * 100) : 0
 
   const formatAmount = (amount) =>
     new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(amount)
@@ -122,6 +233,9 @@ export default function PaymentManagement() {
       month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit',
     })
   }
+
+  const batchSuccessCount = batchRows.filter(r => r.rowStatus === 'success').length
+  const batchErrorCount = batchRows.filter(r => r.rowStatus === 'error').length
 
   return (
     <div className="max-w-7xl mx-auto space-y-8">
@@ -134,10 +248,17 @@ export default function PaymentManagement() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <button className="px-4 py-2 text-body-sm font-semibold border border-outline-variant text-on-surface-variant bg-white rounded-lg hover:bg-slate-50 transition-colors">
+          <button
+            onClick={handleExport}
+            className="px-4 py-2 text-body-sm font-semibold border border-outline-variant text-on-surface-variant bg-white rounded-lg hover:bg-slate-50 transition-colors flex items-center gap-2"
+          >
+            <span className="material-symbols-outlined text-[16px]">file_download</span>
             Export Report
           </button>
-          <button className="px-4 py-2 text-body-sm font-semibold bg-primary text-on-primary rounded-lg shadow-md hover:opacity-90 transition-opacity">
+          <button
+            onClick={openBatch}
+            className="px-4 py-2 text-body-sm font-semibold bg-primary text-on-primary rounded-lg shadow-md hover:opacity-90 transition-opacity"
+          >
             New Batch Entry
           </button>
         </div>
@@ -167,7 +288,7 @@ export default function PaymentManagement() {
                     onChange={handleChange}
                     onBlur={lookupStudent}
                     onKeyDown={handleStudentKeyDown}
-                    placeholder="e.g. STU-2024-0001"
+                    placeholder="e.g. 202100537"
                     className="w-full pl-4 pr-12 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-container focus:border-primary-container outline-none transition-all font-data-mono"
                   />
                   <div className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -192,7 +313,7 @@ export default function PaymentManagement() {
                       {verifiedStudent.student_name?.[0] ?? '?'}
                     </div>
                     <span className="text-xs font-medium text-slate-700">
-                      Verified: {verifiedStudent.student_name} ({verifiedStudent.program})
+                      Verified: {verifiedStudent.student_name ?? verifiedStudent.student_id} ({verifiedStudent.program ?? 'N/A'})
                     </span>
                   </div>
                 )}
@@ -296,12 +417,12 @@ export default function PaymentManagement() {
               </div>
             </div>
             <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
-              <div className="text-label-bold text-slate-500 uppercase tracking-tighter">Pending Approval</div>
+              <div className="text-label-bold text-slate-500 uppercase tracking-tighter">Verified Payments (Today)</div>
               <div className="text-h2 font-h2 text-slate-900 mt-1">
-                {pendingCount} Entries
+                {todayCount} {todayCount === 1 ? 'Entry' : 'Entries'}
               </div>
               <div className="mt-3 w-full h-1 bg-slate-100 rounded-full overflow-hidden">
-                <div className="bg-slate-300 h-full transition-all duration-500" style={{ width: `${pendingMeterPct}%` }} />
+                <div className="bg-primary h-full transition-all duration-500" style={{ width: `${Math.min((todayCount / 50) * 100, 100)}%` }} />
               </div>
             </div>
           </div>
@@ -387,6 +508,226 @@ export default function PaymentManagement() {
           </section>
         </div>
       </div>
+
+      {/* ── Batch Entry Modal ────────────────────────────────────────────────── */}
+      {batchOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col">
+
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100">
+              <div>
+                <h2 className="text-xl font-bold text-primary">Batch Payment Entry</h2>
+                <p className="text-sm text-slate-500 mt-0.5">Add multiple payments and submit them all at once.</p>
+              </div>
+              <button
+                onClick={closeBatch}
+                disabled={batchSubmitting}
+                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors disabled:opacity-40"
+              >
+                <span className="material-symbols-outlined text-slate-500">close</span>
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="overflow-auto flex-1 px-6 py-4">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-slate-100">
+                    <th className="pb-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest pr-3">Student ID</th>
+                    <th className="pb-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest pr-3">Amount (₱)</th>
+                    <th className="pb-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest pr-3">Date</th>
+                    <th className="pb-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest pr-3">Reference No.</th>
+                    <th className="pb-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest pr-3">Method</th>
+                    <th className="pb-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">Status</th>
+                    <th className="pb-3" />
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-50">
+                  {batchRows.map((row) => (
+                    <tr key={row._id} className="group">
+                      {/* Student ID */}
+                      <td className="py-3 pr-3 align-top">
+                        <div className="flex items-center gap-1.5">
+                          <input
+                            type="text"
+                            value={row.studentId}
+                            onChange={e => updateRow(row._id, { studentId: e.target.value, verified: null, verifyError: '' })}
+                            onKeyDown={e => e.key === 'Enter' && verifyBatchRow(row._id, row.studentId)}
+                            placeholder="e.g. 202100537"
+                            disabled={row.rowStatus === 'success' || batchSubmitting}
+                            className="w-36 px-2.5 py-2 border border-slate-200 rounded-lg text-sm font-mono focus:ring-2 focus:ring-primary-container outline-none disabled:bg-slate-50 disabled:text-slate-400"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => verifyBatchRow(row._id, row.studentId)}
+                            disabled={!row.studentId.trim() || row.verifying || row.rowStatus === 'success' || batchSubmitting}
+                            className="px-2 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg text-xs font-bold text-slate-600 transition-colors disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap"
+                          >
+                            {row.verifying ? (
+                              <span className="material-symbols-outlined text-[14px] animate-spin">refresh</span>
+                            ) : row.verified ? (
+                              <span className="material-symbols-outlined text-[14px] text-emerald-600">check_circle</span>
+                            ) : (
+                              'Verify'
+                            )}
+                          </button>
+                        </div>
+                        {row.verified && (
+                          <p className="text-[10px] text-emerald-600 font-medium mt-1 pl-0.5">
+                            {row.verified.student_name ?? row.verified.student_id}
+                          </p>
+                        )}
+                        {row.verifyError && (
+                          <p className="text-[10px] text-red-500 mt-1 pl-0.5">{row.verifyError}</p>
+                        )}
+                      </td>
+
+                      {/* Amount */}
+                      <td className="py-3 pr-3 align-top">
+                        <input
+                          type="number"
+                          min="0.01"
+                          step="0.01"
+                          value={row.amount}
+                          onChange={e => updateRow(row._id, { amount: e.target.value })}
+                          placeholder="0.00"
+                          disabled={row.rowStatus === 'success' || batchSubmitting}
+                          className="w-28 px-2.5 py-2 border border-slate-200 rounded-lg text-sm font-mono focus:ring-2 focus:ring-primary-container outline-none disabled:bg-slate-50 disabled:text-slate-400"
+                        />
+                      </td>
+
+                      {/* Date */}
+                      <td className="py-3 pr-3 align-top">
+                        <input
+                          type="date"
+                          value={row.date}
+                          onChange={e => updateRow(row._id, { date: e.target.value })}
+                          disabled={row.rowStatus === 'success' || batchSubmitting}
+                          className="w-36 px-2.5 py-2 border border-slate-200 rounded-lg text-sm font-mono focus:ring-2 focus:ring-primary-container outline-none disabled:bg-slate-50 disabled:text-slate-400"
+                        />
+                      </td>
+
+                      {/* Reference */}
+                      <td className="py-3 pr-3 align-top">
+                        <input
+                          type="text"
+                          value={row.referenceNo}
+                          onChange={e => updateRow(row._id, { referenceNo: e.target.value })}
+                          placeholder="TXN-XXXXX"
+                          disabled={row.rowStatus === 'success' || batchSubmitting}
+                          className="w-36 px-2.5 py-2 border border-slate-200 rounded-lg text-sm font-mono focus:ring-2 focus:ring-primary-container outline-none disabled:bg-slate-50 disabled:text-slate-400"
+                        />
+                      </td>
+
+                      {/* Method */}
+                      <td className="py-3 pr-3 align-top">
+                        <select
+                          value={row.paymentMethod}
+                          onChange={e => updateRow(row._id, { paymentMethod: e.target.value })}
+                          disabled={row.rowStatus === 'success' || batchSubmitting}
+                          className="w-32 px-2.5 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-container outline-none disabled:bg-slate-50 disabled:text-slate-400"
+                        >
+                          {PAYMENT_METHODS.map(({ value, label }) => (
+                            <option key={value} value={value}>{label}</option>
+                          ))}
+                        </select>
+                      </td>
+
+                      {/* Row status */}
+                      <td className="py-3 pr-3 align-top text-center">
+                        {row.rowStatus === 'idle' && (
+                          <span className="text-[10px] text-slate-400 font-bold uppercase">—</span>
+                        )}
+                        {row.rowStatus === 'loading' && (
+                          <span className="material-symbols-outlined text-[18px] text-slate-400 animate-spin">refresh</span>
+                        )}
+                        {row.rowStatus === 'success' && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-bold">
+                            <span className="material-symbols-outlined text-[12px]">check</span>
+                            Recorded
+                          </span>
+                        )}
+                        {row.rowStatus === 'error' && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-100 text-red-600 text-[10px] font-bold" title={row.rowMsg}>
+                            <span className="material-symbols-outlined text-[12px]">error</span>
+                            Failed
+                          </span>
+                        )}
+                      </td>
+
+                      {/* Remove row */}
+                      <td className="py-3 align-top">
+                        <button
+                          type="button"
+                          onClick={() => removeRow(row._id)}
+                          disabled={batchRows.length === 1 || row.rowStatus === 'success' || batchSubmitting}
+                          className="w-7 h-7 flex items-center justify-center rounded-full text-slate-300 hover:text-red-400 hover:bg-red-50 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                        >
+                          <span className="material-symbols-outlined text-[16px]">delete</span>
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              {/* Add Row */}
+              {!batchDone && (
+                <button
+                  type="button"
+                  onClick={addRow}
+                  disabled={batchSubmitting}
+                  className="mt-4 flex items-center gap-2 text-sm font-bold text-primary hover:underline disabled:opacity-40"
+                >
+                  <span className="material-symbols-outlined text-[18px]">add_circle</span>
+                  Add Row
+                </button>
+              )}
+
+              {/* Done summary */}
+              {batchDone && (
+                <div className="mt-4 px-4 py-3 rounded-lg bg-slate-50 border border-slate-200 text-sm text-slate-700 flex items-center gap-3">
+                  <span className="material-symbols-outlined text-emerald-500">task_alt</span>
+                  Batch complete —
+                  <span className="font-bold text-emerald-600">{batchSuccessCount} recorded</span>
+                  {batchErrorCount > 0 && (
+                    <span className="font-bold text-red-500">{batchErrorCount} failed</span>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-4 border-t border-slate-100 flex items-center justify-between bg-slate-50/50 rounded-b-2xl">
+              <span className="text-sm text-slate-500">
+                {batchRows.length} {batchRows.length === 1 ? 'entry' : 'entries'}
+              </span>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={closeBatch}
+                  disabled={batchSubmitting}
+                  className="px-4 py-2 text-sm font-bold text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors disabled:opacity-40"
+                >
+                  {batchDone ? 'Close' : 'Cancel'}
+                </button>
+                {!batchDone && (
+                  <button
+                    onClick={submitBatch}
+                    disabled={batchSubmitting}
+                    className="px-6 py-2 text-sm font-bold bg-primary text-on-primary rounded-lg hover:opacity-90 transition-opacity disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2"
+                  >
+                    {batchSubmitting && (
+                      <span className="material-symbols-outlined text-[16px] animate-spin">refresh</span>
+                    )}
+                    {batchSubmitting ? 'Processing...' : 'Submit All'}
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

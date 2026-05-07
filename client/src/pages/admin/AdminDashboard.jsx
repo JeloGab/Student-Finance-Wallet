@@ -27,6 +27,21 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
 
+  const handleExportDaily = async () => {
+    try {
+      const response = await api.get('/api/payments/export?today=true', { responseType: 'blob' })
+      const dateStr = new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString().split('T')[0]
+      const url = URL.createObjectURL(new Blob([response.data], { type: 'text/csv' }))
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `daily-report-${dateStr}.csv`
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch {
+      alert('Failed to export. Please try again.')
+    }
+  }
+
   useEffect(() => {
     api.get('/api/admin/dashboard')
       .then(({ data }) => setStats(data))
@@ -135,14 +150,13 @@ export default function AdminDashboard() {
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-4 pt-8 border-t border-slate-100">
-            <button className="flex items-center justify-center gap-3 py-3.5 border border-slate-200 rounded-xl hover:bg-slate-50 transition-all font-bold text-primary text-sm">
+          <div className="pt-8 border-t border-slate-100">
+            <button
+              onClick={handleExportDaily}
+              className="w-full flex items-center justify-center gap-3 py-3.5 border border-slate-200 rounded-xl hover:bg-slate-50 transition-all font-bold text-primary text-sm"
+            >
               <span className="material-symbols-outlined">description</span>
               Export Daily Report
-            </button>
-            <button className="flex items-center justify-center gap-3 py-3.5 border border-slate-200 rounded-xl hover:bg-slate-50 transition-all font-bold text-primary text-sm">
-              <span className="material-symbols-outlined">fact_check</span>
-              Bulk Verify Payments
             </button>
           </div>
         </div>

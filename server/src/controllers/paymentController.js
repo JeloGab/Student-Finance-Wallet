@@ -106,10 +106,12 @@ const getRecentPayments = async (req, res) => {
 
 const getTodayTotal = async (req, res) => {
   try {
-    const startOfDay = new Date()
-    startOfDay.setHours(0, 0, 0, 0)
-    const endOfDay = new Date()
-    endOfDay.setHours(23, 59, 59, 999)
+    // Use PHT (UTC+8) to determine today's date boundaries
+    const PHT_OFFSET = 8 * 60 * 60 * 1000
+    const nowPHT = new Date(Date.now() + PHT_OFFSET)
+    const datePHT = nowPHT.toISOString().split('T')[0]
+    const startOfDay = new Date(`${datePHT}T00:00:00+08:00`)
+    const endOfDay = new Date(`${datePHT}T23:59:59+08:00`)
 
     const { data, error } = await supabase
       .from('payment_transactions')
@@ -121,11 +123,72 @@ const getTodayTotal = async (req, res) => {
     if (error) throw error
 
     const total = data.reduce((sum, p) => sum + Number(p.amount), 0)
-    return res.json({ total, date: startOfDay.toISOString().split('T')[0] })
+    return res.json({ total, count: data.length, date: startOfDay.toISOString().split('T')[0] })
   } catch (err) {
     console.error('getTodayTotal error:', err)
     return res.status(500).json({ error: 'Server error', message: 'Failed to fetch today total' })
   }
 }
 
-module.exports = { recordPayment, getRecentPayments, getTodayTotal }
+const exportPayments = async (req, res) => {
+  try {
+    let query = supabase
+      .from('payment_transactions')
+      .select(`
+        reference_no,
+        student_id,
+        amount,
+        payment_method,
+        payment_date,
+        status,
+        created_at,
+        recorded_by,
+        student_accounts (student_name, program)
+      `)
+      .order('created_at', { ascending: false })
+
+    if (req.query.today === 'true') {
+      const PHT_OFFSET = 8 * 60 * 60 * 1000
+      const nowPHT = new Date(Date.now() + PHT_OFFSET)
+      const datePHT = nowPHT.toISOString().split('T')[0]
+      query = query
+        .gte('created_at', new Date(`${datePHT}T00:00:00+08:00`).toISOString())
+        .lte('created_at', new Date(`${datePHT}T23:59:59+08:00`).toISOString())
+    }
+
+    const { data, error } = await query
+
+    if (error) throw error
+
+    const headers = ['Reference No', 'Student ID', 'Student Name', 'Program', 'Amount', 'Payment Method', 'Payment Date', 'Status', 'Recorded By', 'Recorded At']
+
+    const rows = data.map(p => [
+      p.reference_no,
+      p.student_id,
+      p.student_accounts?.student_name ?? '',
+      p.student_accounts?.program ?? '',
+      Number(p.amount).toFixed(2),
+      p.payment_method,
+      p.payment_date ?? '',
+      p.status,
+      p.recorded_by ?? '',
+      p.created_at ? new Date(p.created_at).toLocaleString('en-PH') : '',
+    ])
+
+    const escape = (val) => `"${String(val).replace(/"/g, '""')}"`
+    const csv = [headers, ...rows].map(row => row.map(escape).join(',')).join('\r\n')
+
+    const dateStr = new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString().split('T')[0]
+    const filename = req.query.today === 'true'
+      ? `daily-report-${dateStr}.csv`
+      : `payments-export-${dateStr}.csv`
+    res.setHeader('Content-Type', 'text/csv')
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`)
+    return res.send(csv)
+  } catch (err) {
+    console.error('exportPayments error:', err)
+    return res.status(500).json({ error: 'Server error', message: 'Failed to export payments' })
+  }
+}
+
+module.exports = { recordPayment, getRecentPayments, getTodayTotal, exportPayments }

@@ -81,7 +81,7 @@ const getActivityLogs = async (req, res) => {
   const offset = (page - 1) * limit
 
   try {
-    const [logsResult, countResult] = await Promise.all([
+    const [logsResult, countResult, accountsResult] = await Promise.all([
       supabase
         .from('activity_logs')
         .select('id, student_id, action, performed_by, details, logged_at')
@@ -89,13 +89,26 @@ const getActivityLogs = async (req, res) => {
         .range(offset, offset + limit - 1),
       supabase
         .from('activity_logs')
-        .select('*', { count: 'exact', head: true })
+        .select('*', { count: 'exact', head: true }),
+      supabase
+        .from('student_accounts')
+        .select('student_id, student_name, program')
     ])
 
     if (logsResult.error) throw logsResult.error
     if (countResult.error) throw countResult.error
 
     const total = countResult.count ?? 0
+    const accounts = accountsResult.data ?? []
+
+    const logs = logsResult.data.map(log => {
+      const account = accounts.find(a => a.student_id === log.student_id)
+      return {
+        ...log,
+        student_name: account?.student_name ?? null,
+        program: account?.program ?? null,
+      }
+    })
 
     // Stats
     const today = new Date()
@@ -122,7 +135,7 @@ const getActivityLogs = async (req, res) => {
       : 0
 
     return res.json({
-      logs: logsResult.data,
+      logs,
       total,
       page,
       total_pages: Math.ceil(total / limit),

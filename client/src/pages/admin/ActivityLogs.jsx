@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import api from '../../lib/api'
+import { generateReceipt } from '../../lib/receipt'
 
 const formatDate = (dateStr) => {
   const d = new Date(dateStr)
@@ -157,16 +158,17 @@ export default function ActivityLogs() {
                 <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">Description</th>
                 <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">Student</th>
                 <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">Status</th>
+                <th className="px-6 py-4 border-b border-slate-100" />
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-10 text-center text-sm text-slate-400">Loading...</td>
+                  <td colSpan={7} className="px-6 py-10 text-center text-sm text-slate-400">Loading...</td>
                 </tr>
               ) : logs.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-10 text-center text-sm text-slate-400">No activity logs yet.</td>
+                  <td colSpan={7} className="px-6 py-10 text-center text-sm text-slate-400">No activity logs yet.</td>
                 </tr>
               ) : (
                 logs.map((log) => {
@@ -201,6 +203,26 @@ export default function ActivityLogs() {
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold ${badge.cls}`}>
                           {badge.label}
                         </span>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        {log.action === 'PAYMENT_RECORDED' && (
+                          <button
+                            onClick={() => generateReceipt({
+                              studentId: log.student_id,
+                              studentName: log.student_name,
+                              program: log.program,
+                              amount: log.details?.amount,
+                              paymentMethod: log.details?.payment_method,
+                              paymentDate: log.logged_at,
+                              referenceNo: log.details?.reference_no,
+                              status: log.details?.new_status,
+                            })}
+                            className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-primary border border-primary rounded-lg hover:bg-primary hover:text-white transition-colors"
+                          >
+                            <span className="material-symbols-outlined text-[14px]">download</span>
+                            Receipt
+                          </button>
+                        )}
                       </td>
                     </tr>
                   )
