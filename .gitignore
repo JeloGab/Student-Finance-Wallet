@@ -28,10 +28,19 @@ Admin Dashboard/
 Student Billing/
 Student Dashboard/
 
-# Local notes and session files
-PROJECT_NOTES.md
-SESSION_2026-04-28.md
-SESSION_2026-05-02.md
+# Local notes, session files, and documentation
+*.md
+
+# Screenshots and images
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+
+# Documents and reference files
+*.pdf
+*.txt
 
 # OS
 .DS_Store
