@@ -22,25 +22,18 @@ logs/
 *.log
 npm-debug.log*
 
-# Design reference folders
-Admin Activity Logs/
-Admin Dashboard/
+# Root-level non-application files (docs, notes, screenshots, etc.)
+/*.md
+/*.png
+/*.jpg
+/*.jpeg
+/*.pdf
+/*.txt
+
 Student Billing/
 Student Dashboard/
-
-# Local notes, session files, and documentation
-*.md
-
-# Screenshots and images
-*.png
-*.jpg
-*.jpeg
-*.gif
-*.webp
-
-# Documents and reference files
-*.pdf
-*.txt
+Admin Activity Logs/
+Admin Dashboard/
 
 # OS
 .DS_Store
