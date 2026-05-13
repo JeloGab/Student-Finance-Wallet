@@ -240,4 +240,23 @@ const getNotifications = async (req, res) => {
   }
 }
 
+const getNotificationsByStudent = async (req, res) => {
+  const { studentId } = req.params
+
+  try {
+    const { data, error } = await supabase
+      .from('payment_notifications')
+      .select('id, event, payload, created_at')
+      .eq('payload->>student_id', studentId)
+      .order('created_at', { ascending: false })
+
+    if (error) throw error
+
+    return res.json(data)
+  } catch (err) {
+    console.error('getNotificationsByStudent error:', err)
+    return res.status(500).json({ error: 'Server error', message: 'Failed to fetch notifications' })
+  }
+}
+
 module.exports = { recordPayment, getRecentPayments, getTodayTotal, exportPayments, getNotifications }
