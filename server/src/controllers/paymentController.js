@@ -72,6 +72,7 @@ const recordPayment = async (req, res) => {
 
     await supabase.from('payment_notifications').insert({
       event: 'PAYMENT_RECORDED',
+      student_id,
       payload: {
         event: 'PAYMENT_RECORDED',
         student_id,
@@ -90,6 +91,7 @@ const recordPayment = async (req, res) => {
     if (newStatus !== student.status) {
       await supabase.from('payment_notifications').insert({
         event: 'STATUS_CHANGED',
+        student_id,
         payload: {
           event: 'STATUS_CHANGED',
           student_id,
@@ -247,7 +249,7 @@ const getNotificationsByStudent = async (req, res) => {
     const { data, error } = await supabase
       .from('payment_notifications')
       .select('id, event, payload, created_at')
-      .eq('payload->>student_id', studentId)
+      .eq('student_id', studentId)
       .order('created_at', { ascending: false })
 
     if (error) throw error
@@ -259,4 +261,4 @@ const getNotificationsByStudent = async (req, res) => {
   }
 }
 
-module.exports = { recordPayment, getRecentPayments, getTodayTotal, exportPayments, getNotifications }
+module.exports = { recordPayment, getRecentPayments, getTodayTotal, exportPayments, getNotifications, getNotificationsByStudent }
