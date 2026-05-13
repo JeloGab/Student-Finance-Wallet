@@ -67,6 +67,39 @@ const recordPayment = async (req, res) => {
       logged_at: new Date().toISOString()
     })
 
+    const timestamp = new Date().toISOString()
+    const remainingBalance = totalDue - newTotalPaid
+
+    await supabase.from('payment_notifications').insert({
+      event: 'PAYMENT_RECORDED',
+      payload: {
+        event: 'PAYMENT_RECORDED',
+        student_id,
+        amount: Number(amount),
+        reference_no,
+        payment_method,
+        payment_date,
+        new_status: newStatus,
+        total_due: totalDue,
+        total_paid: newTotalPaid,
+        remaining_balance: remainingBalance,
+        timestamp
+      }
+    })
+
+    if (newStatus !== student.status) {
+      await supabase.from('payment_notifications').insert({
+        event: 'STATUS_CHANGED',
+        payload: {
+          event: 'STATUS_CHANGED',
+          student_id,
+          previous_status: student.status,
+          new_status: newStatus,
+          timestamp
+        }
+      })
+    }
+
     return res.status(201).json({
       message: 'Payment recorded successfully',
       student_status: newStatus
@@ -191,4 +224,20 @@ const exportPayments = async (req, res) => {
   }
 }
 
-module.exports = { recordPayment, getRecentPayments, getTodayTotal, exportPayments }
+const getNotifications = async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('payment_notifications')
+      .select('id, event, payload, created_at')
+      .order('created_at', { ascending: false })
+
+    if (error) throw error
+
+    return res.json(data)
+  } catch (err) {
+    console.error('getNotifications error:', err)
+    return res.status(500).json({ error: 'Server error', message: 'Failed to fetch notifications' })
+  }
+}
+
+module.exports = { recordPayment, getRecentPayments, getTodayTotal, exportPayments, getNotifications }
