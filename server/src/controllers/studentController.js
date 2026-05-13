@@ -71,4 +71,88 @@ const getStudentStatus = async (req, res) => {
   }
 }
 
-module.exports = { lookupStudent, getStudentStatus }
+const getMyAccount = async (req, res) => {
+  const email = req.user.email
+
+  try {
+    const { data, error } = await supabase
+      .from('student_accounts')
+      .select('student_id, student_name, program, total_due, total_paid, status')
+      .eq('email', email)
+      .single()
+
+    if (error || !data) {
+      return res.status(404).json({ error: 'Not found', message: 'No student account linked to this email' })
+    }
+
+    const remaining_balance = Number(data.total_due) - Number(data.total_paid)
+    return res.json({ ...data, remaining_balance })
+  } catch (err) {
+    console.error('getMyAccount error:', err)
+    return res.status(500).json({ error: 'Server error', message: 'Failed to fetch account' })
+  }
+}
+
+const getMyFees = async (req, res) => {
+  const email = req.user.email
+  const { semester } = req.query
+
+  try {
+    const { data: account, error: accountError } = await supabase
+      .from('student_accounts')
+      .select('student_id')
+      .eq('email', email)
+      .single()
+
+    if (accountError || !account) {
+      return res.status(404).json({ error: 'Not found', message: 'No student account linked to this email' })
+    }
+
+    let query = supabase
+      .from('enrollment_fees')
+      .select('id, course_id, course_code, course_name, units, amount, fee_type, semester')
+      .eq('student_id', account.student_id)
+      .order('created_at', { ascending: true })
+
+    if (semester) query = query.eq('semester', semester)
+
+    const { data, error } = await query
+    if (error) throw error
+
+    return res.json(data)
+  } catch (err) {
+    console.error('getMyFees error:', err)
+    return res.status(500).json({ error: 'Server error', message: 'Failed to fetch fees' })
+  }
+}
+
+const getMyTransactions = async (req, res) => {
+  const email = req.user.email
+
+  try {
+    const { data: account, error: accountError } = await supabase
+      .from('student_accounts')
+      .select('student_id')
+      .eq('email', email)
+      .single()
+
+    if (accountError || !account) {
+      return res.status(404).json({ error: 'Not found', message: 'No student account linked to this email' })
+    }
+
+    const { data, error } = await supabase
+      .from('payment_transactions')
+      .select('id, reference_no, amount, payment_date, payment_method, status, created_at')
+      .eq('student_id', account.student_id)
+      .order('created_at', { ascending: false })
+
+    if (error) throw error
+
+    return res.json(data)
+  } catch (err) {
+    console.error('getMyTransactions error:', err)
+    return res.status(500).json({ error: 'Server error', message: 'Failed to fetch transactions' })
+  }
+}
+
+module.exports = { lookupStudent, getStudentStatus, getMyAccount, getMyFees, getMyTransactions }
