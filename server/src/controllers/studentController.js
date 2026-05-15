@@ -1,6 +1,8 @@
 const supabase = require('../config/supabase')
 const { verifyStudent } = require('../integrations/srm')
 
+const manilaTime = () => new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString().replace('Z', '+08:00')
+
 const lookupStudent = async (req, res) => {
   const { studentId } = req.params
 
@@ -74,7 +76,7 @@ const updateTotalDue = async (req, res) => {
 
     const { error: updateError } = await supabase
       .from('student_accounts')
-      .update({ total_due: parsed, status: newStatus, updated_at: new Date().toISOString() })
+      .update({ total_due: parsed, status: newStatus, updated_at: manilaTime() })
       .eq('student_id', studentId)
 
     if (updateError) throw updateError
@@ -84,7 +86,7 @@ const updateTotalDue = async (req, res) => {
       action: 'TOTAL_DUE_UPDATED',
       performed_by: req.user.email,
       details: { total_due: parsed, new_status: newStatus },
-      logged_at: new Date().toISOString()
+      logged_at: manilaTime()
     })
 
     return res.json({

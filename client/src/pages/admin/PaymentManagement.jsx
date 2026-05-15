@@ -249,7 +249,9 @@ export default function PaymentManagement() {
 
   const formatDate = (dateStr) => {
     if (!dateStr) return '—'
-    return new Date(dateStr).toLocaleString('en-PH', {
+    const utc = dateStr.includes('Z') || dateStr.includes('+') ? dateStr : dateStr + 'Z'
+    return new Date(utc).toLocaleString('en-PH', {
+      timeZone: 'Asia/Manila',
       month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit',
     })
   }

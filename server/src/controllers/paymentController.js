@@ -1,5 +1,7 @@
 const supabase = require('../config/supabase')
 
+const manilaTime = () => new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString().replace('Z', '+08:00')
+
 const recordPayment = async (req, res) => {
   const { student_id, amount, payment_date, reference_no, payment_method } = req.body
   const recorded_by = req.user.email
@@ -51,7 +53,7 @@ const recordPayment = async (req, res) => {
 
     const { error: updateError } = await supabase
       .from('student_accounts')
-      .update({ total_paid: newTotalPaid, status: newStatus, updated_at: new Date().toISOString() })
+      .update({ total_paid: newTotalPaid, status: newStatus, updated_at: manilaTime() })
       .eq('student_id', student_id)
 
     if (updateError) {
@@ -64,10 +66,10 @@ const recordPayment = async (req, res) => {
       action: 'PAYMENT_RECORDED',
       performed_by: recorded_by,
       details: { amount, reference_no, payment_method, new_status: newStatus },
-      logged_at: new Date().toISOString()
+      logged_at: manilaTime()
     })
 
-    const timestamp = new Date().toISOString()
+    const timestamp = manilaTime()
     const remainingBalance = totalDue - newTotalPaid
 
     await supabase.from('payment_notifications').insert({
