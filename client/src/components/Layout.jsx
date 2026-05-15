@@ -27,11 +27,9 @@ export default function Layout({ children }) {
 
   if (!user) return null
 
-  const role = user.user_metadata?.role ?? 'student'
-
   return (
     <div className="min-h-screen bg-background">
-      <Sidebar role={role} />
+      <Sidebar />
       <div className="md:ml-64 flex flex-col min-h-screen">
         <TopBar user={user} />
         <main className="p-6 lg:p-8 flex-1">

@@ -1,14 +1,9 @@
 import { NavLink } from 'react-router-dom'
 
-const adminNav = [
+const navItems = [
   { to: '/admin/dashboard', icon: 'dashboard', label: 'Dashboard' },
   { to: '/finance/payments', icon: 'payments', label: 'Payment Management' },
   { to: '/activity', icon: 'history', label: 'Activity Logs' },
-]
-
-const studentNav = [
-  { to: '/dashboard', icon: 'dashboard', label: 'Dashboard' },
-  { to: '/billing', icon: 'receipt_long', label: 'Billing' },
 ]
 
 const bottomItems = [
@@ -16,9 +11,7 @@ const bottomItems = [
   { to: '/support', icon: 'help', label: 'Support' },
 ]
 
-export default function Sidebar({ role }) {
-  const navItems = role === 'finance_staff' ? adminNav : studentNav
-
+export default function Sidebar() {
   return (
     <aside className="h-screen w-64 border-r border-slate-200 fixed left-0 top-0 hidden md:flex flex-col bg-white z-50">
       <div className="p-6">

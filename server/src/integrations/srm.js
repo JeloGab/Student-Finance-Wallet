@@ -4,16 +4,24 @@ const verifyStudent = async (studentId) => {
 
   if (!token) {
     console.warn('[SRM] ESB_JWT_TOKEN not set — skipping SRM verification')
-    return true
+    return { exists: true, student_name: null, program: null, email: null }
   }
 
   const response = await fetch(`${baseUrl}/api/esb/srm/students/${studentId}`, {
     headers: { Authorization: `Bearer ${token}` }
   })
 
-  if (response.ok) return true
-  if (response.status === 404) return false
-  throw new Error(`ESB/SRM returned ${response.status}`)
+  if (response.status === 404) return null
+  if (!response.ok) throw new Error(`ESB/SRM returned ${response.status}`)
+
+  const body = await response.json()
+  // Field names TBD — update mapping once SRM team confirms response shape
+  return {
+    exists: true,
+    student_name: body.full_name ?? body.student_name ?? body.name ?? null,
+    program: body.program ?? body.course ?? null,
+    email: body.email ?? null,
+  }
 }
 
 module.exports = { verifyStudent }

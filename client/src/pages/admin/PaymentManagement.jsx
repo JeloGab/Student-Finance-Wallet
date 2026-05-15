@@ -42,6 +42,8 @@ export default function PaymentManagement() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitMessage, setSubmitMessage] = useState(null)
 
+  const [totalDueForm, setTotalDueForm] = useState({ open: false, value: '', submitting: false, message: null })
+
   // Batch modal state
   const [batchOpen, setBatchOpen] = useState(false)
   const [batchRows, setBatchRows] = useState([makeRow()])
@@ -78,6 +80,7 @@ export default function PaymentManagement() {
     if (name === 'studentId') {
       setVerifiedStudent(null)
       setLookupError('')
+      setTotalDueForm({ open: false, value: '', submitting: false, message: null })
     }
   }
 
@@ -103,6 +106,22 @@ export default function PaymentManagement() {
     }
   }
 
+  const handleUpdateTotalDue = async () => {
+    const val = parseFloat(totalDueForm.value)
+    if (isNaN(val) || val < 0) {
+      setTotalDueForm(f => ({ ...f, message: { type: 'error', text: 'Enter a valid amount.' } }))
+      return
+    }
+    setTotalDueForm(f => ({ ...f, submitting: true, message: null }))
+    try {
+      const { data } = await api.patch(`/api/students/${form.studentId.trim()}/total-due`, { total_due: val })
+      setVerifiedStudent(prev => ({ ...prev, total_due: data.total_due, total_paid: data.total_paid, remaining_balance: data.remaining_balance, status: data.status }))
+      setTotalDueForm({ open: false, value: '', submitting: false, message: null })
+    } catch (err) {
+      setTotalDueForm(f => ({ ...f, submitting: false, message: { type: 'error', text: err.response?.data?.message || 'Failed to update.' } }))
+    }
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (!verifiedStudent) {
@@ -122,6 +141,7 @@ export default function PaymentManagement() {
       setSubmitMessage({ type: 'success', text: `Payment recorded. Student status: ${data.student_status}` })
       setForm(initialForm)
       setVerifiedStudent(null)
+      setTotalDueForm({ open: false, value: '', submitting: false, message: null })
       fetchRecentPayments()
       fetchTodayTotal()
     } catch (err) {
@@ -308,13 +328,90 @@ export default function PaymentManagement() {
                   </div>
                 </div>
                 {verifiedStudent && (
-                  <div className="flex items-center gap-2 mt-2 px-1">
-                    <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-600">
-                      {verifiedStudent.student_name?.[0] ?? '?'}
+                  <div className="mt-3 rounded-lg border border-slate-200 bg-slate-50 p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-sm font-bold text-slate-600">
+                          {verifiedStudent.student_name?.[0] ?? '?'}
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-slate-800">{verifiedStudent.student_name ?? '—'}</p>
+                          <p className="text-xs text-slate-500">{verifiedStudent.program ?? 'N/A'} · ID: {verifiedStudent.student_id}</p>
+                        </div>
+                      </div>
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${
+                        verifiedStudent.status === 'CLEARED'
+                          ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
+                          : 'bg-amber-50 text-amber-700 border-amber-100'
+                      }`}>
+                        {verifiedStudent.status ?? 'ON_HOLD'}
+                      </span>
                     </div>
-                    <span className="text-xs font-medium text-slate-700">
-                      Verified: {verifiedStudent.student_name ?? verifiedStudent.student_id} ({verifiedStudent.program ?? 'N/A'})
-                    </span>
+
+                    <div className="grid grid-cols-3 gap-2 pt-1">
+                      <div className="text-center">
+                        <p className="text-[10px] uppercase text-slate-400 font-bold">Total Due</p>
+                        <p className="text-sm font-data-mono font-bold text-slate-700">{formatAmount(verifiedStudent.total_due ?? 0)}</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-[10px] uppercase text-slate-400 font-bold">Total Paid</p>
+                        <p className="text-sm font-data-mono font-bold text-emerald-600">{formatAmount(verifiedStudent.total_paid ?? 0)}</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-[10px] uppercase text-slate-400 font-bold">Remaining</p>
+                        <p className="text-sm font-data-mono font-bold text-red-500">{formatAmount(Math.max(0, (verifiedStudent.total_due ?? 0) - (verifiedStudent.total_paid ?? 0)))}</p>
+                      </div>
+                    </div>
+
+                    <div className="border-t border-slate-200 pt-2">
+                      {!totalDueForm.open ? (
+                        <button
+                          type="button"
+                          onClick={() => setTotalDueForm(f => ({ ...f, open: true, value: verifiedStudent.total_due ?? '' }))}
+                          className="text-xs font-bold text-primary hover:underline flex items-center gap-1"
+                        >
+                          <span className="material-symbols-outlined text-[14px]">edit</span>
+                          Update Total Due
+                        </button>
+                      ) : (
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <div className="relative flex-1">
+                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">₱</span>
+                              <input
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                value={totalDueForm.value}
+                                onChange={e => setTotalDueForm(f => ({ ...f, value: e.target.value }))}
+                                className="w-full pl-7 pr-3 py-2 border border-slate-200 rounded-lg text-sm font-data-mono focus:ring-2 focus:ring-primary-container outline-none"
+                              />
+                            </div>
+                            <button
+                              type="button"
+                              onClick={handleUpdateTotalDue}
+                              disabled={totalDueForm.submitting}
+                              className="px-3 py-2 bg-primary text-white text-xs font-bold rounded-lg hover:opacity-90 disabled:opacity-60"
+                            >
+                              {totalDueForm.submitting ? '...' : 'Save'}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setTotalDueForm({ open: false, value: '', submitting: false, message: null })}
+                              disabled={totalDueForm.submitting}
+                              className="px-3 py-2 text-xs font-bold text-slate-500 border border-slate-200 rounded-lg hover:bg-slate-100"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                          {totalDueForm.message && (
+                            <p className={`text-xs font-medium ${totalDueForm.message.type === 'success' ? 'text-emerald-600' : 'text-red-500'}`}>
+                              {totalDueForm.message.text}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
                 {lookupError && (

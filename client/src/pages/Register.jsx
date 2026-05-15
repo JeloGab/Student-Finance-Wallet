@@ -4,7 +4,7 @@ import supabase from '../lib/supabase'
 
 export default function Register() {
   const navigate = useNavigate()
-  const [form, setForm] = useState({ fullName: '', email: '', password: '', role: 'finance_staff' })
+  const [form, setForm] = useState({ fullName: '', email: '', password: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -21,7 +21,7 @@ export default function Register() {
       options: {
         data: {
           full_name: form.fullName,
-          role: form.role,
+          role: 'finance_staff',
         },
       },
     })
@@ -91,19 +91,6 @@ export default function Register() {
               placeholder="At least 6 characters"
               className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-container outline-none text-body-sm"
             />
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-label-bold font-label-bold text-slate-600 block uppercase">Role</label>
-            <select
-              name="role"
-              value={form.role}
-              onChange={handleChange}
-              className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-container outline-none text-body-sm"
-            >
-              <option value="finance_staff">Finance Staff</option>
-              <option value="student">Student</option>
-            </select>
           </div>
 
           <button
